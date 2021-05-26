@@ -1,0 +1,22 @@
+{
+  "name": "nodedb-helper",
+  "version": "1.0.1",
+  "description": "Nodejs MySQL Helper",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/harshkanjariya/nodedb-helper.git"
+  },
+  "keywords": [
+    "mysql"
+  ],
+  "author": "Harsh Kanjariya",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/harshkanjariya/nodedb-helper/issues"
+  },
+  "homepage": "https://github.com/harshkanjariya/nodedb-helper#readme"
+}
