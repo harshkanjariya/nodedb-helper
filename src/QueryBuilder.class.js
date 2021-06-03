@@ -102,17 +102,21 @@ class QueryBuilder {
 		if (filteredKeys.length === 0 && !object.duplicateUpdate)
 			return sql;
 
+		let addable = [];
 		filteredKeys.forEach((k)=>{
-			if (object.ignore && object.ignore.includes(k))return;
-			sql += k+`=values(${k}),`;
+			if ((object.ignore && object.ignore.includes(k)) ||
+				(object.duplicateIgnore && object.duplicateIgnore.includes(k)))return;
+
+			addable.push(k+`=values(${k})`);
 		});
-		sql = sql.substr(0,sql.length-1);
 
 		if (object.duplicateUpdate){
-			if (filteredKeys.length > 0)
-				sql += ',';
-			sql += ' '+object.duplicateUpdate;
+			let keys = Object.keys(object.duplicateUpdate);
+			keys.forEach((k)=>{
+				addable.push(k+`='${object.duplicateUpdate[k]}'`);
+			});
 		}
+		sql += addable.join(',');
 
 		return sql;
 	}
