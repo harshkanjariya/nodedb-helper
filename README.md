@@ -8,7 +8,7 @@ You can manage multiple databases using this package easily.
 #### setup
 
 set .env variables for production and development
-```env
+```dotenv
 NODE_ENV=development
 
 PROD_DB_URL=mysql_url
