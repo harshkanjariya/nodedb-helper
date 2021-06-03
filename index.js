@@ -1,4 +1,4 @@
-const Database = require("database/Database.class");
+const Database = require("./src/Database.class");
 
 function setupDatabase(dbObject) {
 	let databaseList = dbObject;

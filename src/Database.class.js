@@ -5,7 +5,7 @@ class Database {
 	constructor(databases) {
 		let host, username,password;
 
-		if (process.env.MODE === 'production'){
+		if (process.env.NODE_ENV === 'production'){
 			host = process.env.PROD_DB_URL;
 			username = process.env.PROD_DB_USERNAME;
 			password = process.env.PROD_DB_PASSWORD;
@@ -40,25 +40,7 @@ class Database {
 	}
 	/**
 	 * @param {{
-	 *     table: [
-	 *  'unverified_user',
-	 * 	'user',
-	 * 	'otp',
-	 * 	'device',
-	 * 	'views',
-	 * 	'settings',
-	 * 	'education_program_level',
-	 * 	'education_descipline',
-	 * 	'education_course',
-	 * 	'colleges',
-	 * 	'exams',
-	 * 	'given_exams',
-	 * 	'skills',
-	 * 	'languages',
-	 * 	'hobbies',
-	 * 	'company',
-	 * 	'jobs'
-	 *     ],
+	 *     table: string,
 	 *     columns: string|Array,
 	 *     where: string,
 	 *     params: string|Array,
@@ -74,25 +56,10 @@ class Database {
 		return query.execWithWhereOrderPage(sql,object);
 	}
 	/**
-	 * @param {{joins: [string], tables: [
-	 *         'unverified_user',
-	 *		   'user',
-	 *		   'otp',
-	 *		   'device',
-	 *		   'views',
-	 *		   'settings',
-	 *		   'education_program_level',
-	 *		   'education_descipline',
-	 *		   'education_course',
-	 *		   'colleges',
-	 *		   'exams',
-	 *		   'given_exams',
-	 *		   'skills',
-	 *		   'languages',
-	 *		   'hobbies',
-	 *		   'company',
-	 *		   'jobs'
-	 * ], columns: string, where: string, params: []}} object
+	 * @param {{
+     * 	   joins: [string], 
+	 *     table: [string], 
+	 *	   columns: string, where: string, params: []}} object
 	 * @return {Promise<unknown>}
 	 */
 	selectJoin(object){
@@ -101,26 +68,7 @@ class Database {
 		return query.execWithWhereOrderPage(sql,object);
 	}
 	/**
-	 * @param {
-	 * 	'unverified_user',
-	 * 	'user',
-	 * 	'otp',
-	 * 	'device',
-	 * 	'views',
-	 * 	'settings',
-	 * 	'education_program_level',
-	 * 	'education_descipline',
-	 * 	'education_course',
-	 * 	'colleges',
-	 * 	'exams',
-	 * 	'given_exams',
-	 * 	'skills',
-	 * 	'languages',
-	 * 	'hobbies',
-	 *
-	 * 	'company',
-	 * 	'jobs'
-	 * } table
+	 * @param {string} table
 	 * @param {{}|[{}]} values
 	 * @returns {Promise<{result: unknown, error: *}>}
 	 */
@@ -134,26 +82,7 @@ class Database {
 		return query.execQuery(obj.sql,obj.params);
 	}
 	/**
-	 * @param {{table:{
-	 * 	'unverified_user',
-	 * 	'user',
-	 * 	'otp',
-	 * 	'device',
-	 * 	'views',
-	 * 	'settings',
-	 * 	'education_program_level',
-	 * 	'education_descipline',
-	 * 	'education_course',
-	 * 	'colleges',
-	 * 	'exams',
-	 * 	'given_exams',
-	 * 	'skills',
-	 * 	'languages',
-	 * 	'hobbies',
-	 *
-	 * 	'company',
-	 * 	'jobs'
-	 * },
+	 * @param {{table:string,
 	 * values:{},
 	 * where: string,
 	 * params: Array|string,
@@ -168,25 +97,7 @@ class Database {
 		return query.execQuery(sql,object.params);
 	}
 	/**
-	 * @param {{table:{
-	 * 	'unverified_user',
-	 * 	'user',
-	 * 	'otp',
-	 * 	'device',
-	 * 	'views',
-	 * 	'settings',
-	 * 	'education_program_level',
-	 * 	'education_descipline',
-	 * 	'education_course',
-	 * 	'colleges',
-	 * 	'exams',
-	 * 	'given_exams',
-	 * 	'skills',
-	 * 	'languages',
-	 * 	'hobbies',
-	 * 	'company',
-	 * 	'jobs'
-	 * },
+	 * @param {{table:string,
 	 * values: {},
 	 * ignore: [string]
 	 * }} object
@@ -207,26 +118,7 @@ class Database {
 		return query.execQuery(sql,params);
 	}
 	/**
-	 * @param {{table:{
-	 * 	'unverified_user',
-	 * 	'user',
-	 * 	'otp',
-	 * 	'device',
-	 * 	'views',
-	 * 	'settings',
-	 * 	'education_program_level',
-	 * 	'education_descipline',
-	 * 	'education_course',
-	 * 	'colleges',
-	 * 	'exams',
-	 * 	'given_exams',
-	 * 	'skills',
-	 * 	'languages',
-	 * 	'hobbies',
-	 *
-	 * 	'company',
-	 * 	'jobs'
-	 * },
+	 * @param {{table:string,
 	 * where:string,
 	 * params: string|Array
 	 * }} object
