@@ -28,6 +28,12 @@ function selectJoin(object) {
 function insertOrUpdate(object) {
 	return database.insertOrUpdate(object);
 }
+function beginTransaction() {
+	return database.beginTransaction();
+}
+function commit() {
+	return database.commit();
+}
 
 let fns = {
 	query,
@@ -37,6 +43,8 @@ let fns = {
 	delete: deleteQuery,
 	selectJoin,
 	insertOrUpdate,
+	beginTransaction,
+	commit,
 }
 let obj = {...fns};
 Object.keys(databaseList).forEach(k=>{

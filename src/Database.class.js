@@ -34,6 +34,12 @@ class Database {
 
 		this.current = 'emplicheck_esign';
 	}
+	beginTransaction(){
+		return this.database[this.current].beginTransaction();
+	}
+	commit(){
+		return this.database[this.current].commit();
+	}
 	query(sql,params){
 		let q = new QueryBuilder(this.database[this.current]);
 		return q.execQuery(sql,params);
