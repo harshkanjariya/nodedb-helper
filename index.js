@@ -36,6 +36,9 @@ function setupDatabase(dbObject) {
 		delete: deleteQuery,
 		selectJoin,
 		insertOrUpdate,
+		beginTransaction: ()=>database.beginTransaction(),
+		commit: ()=>database.commit(),
+		rollback: ()=>database.rollback(),
 	}
 	let obj = {...fns};
 	Object.keys(databaseList).forEach(k=>{
