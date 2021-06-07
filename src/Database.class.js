@@ -40,6 +40,9 @@ class Database {
 	commit(){
 		return this.database[this.current].commit();
 	}
+	rollback(){
+		return this.database[this.current].rollback();
+	}
 	query(sql,params){
 		let q = new QueryBuilder(this.database[this.current]);
 		return q.execQuery(sql,params);
