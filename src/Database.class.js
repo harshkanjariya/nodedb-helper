@@ -16,6 +16,7 @@ class Database {
 		}
 		this.database = {};
 		this.databaseNames = [];
+		this.debug = debug;
 
 		Object.keys(databases).forEach(k=>{
 			this.databaseNames.push(k);
@@ -44,7 +45,7 @@ class Database {
 		return this.database[this.current].rollback();
 	}
 	query(sql,params){
-		let q = new QueryBuilder(this.database[this.current],debug);
+		let q = new QueryBuilder(this.database[this.current],this.debug);
 		return q.execQuery(sql,params);
 	}
 	/**
@@ -60,7 +61,7 @@ class Database {
 	 * @return {Promise<unknown>}
 	 */
 	select(object){
-		let query = new QueryBuilder(this.database[this.current],debug);
+		let query = new QueryBuilder(this.database[this.current],this.debug);
 		let sql = query.selectQuery(object);
 		return query.execWithWhereOrderPage(sql,object);
 	}
@@ -72,7 +73,7 @@ class Database {
 	 * @return {Promise<unknown>}
 	 */
 	selectJoin(object){
-		let query = new QueryBuilder(this.database[this.current],debug);
+		let query = new QueryBuilder(this.database[this.current],this.debug);
 		let sql = query.selectJoinQuery(object);
 		return query.execWithWhereOrderPage(sql,object);
 	}
@@ -82,7 +83,7 @@ class Database {
 	 * @returns {Promise<{result: unknown, error: *}>}
 	 */
 	insert(table,values) {
-		let query = new QueryBuilder(this.database[this.current],debug);
+		let query = new QueryBuilder(this.database[this.current],this.debug);
 		let obj;
 		if (Array.isArray(values))
 			obj = query.insertMultipleQuery(table,values);
@@ -100,7 +101,7 @@ class Database {
 	 * @return Promise
 	 */
 	update(object){
-		let query = new QueryBuilder(this.database[this.current],debug);
+		let query = new QueryBuilder(this.database[this.current],this.debug);
 		let sql = query.updateQuery(object);
 		sql = query.whereSql(object,sql);
 		return query.execQuery(sql,object.params);
@@ -113,7 +114,7 @@ class Database {
 	 * @returns {Promise}
 	 */
 	insertOrUpdate(object) {
-		let query = new QueryBuilder(this.database[this.current],debug);
+		let query = new QueryBuilder(this.database[this.current],this.debug);
 
 		let obj;
 		if (Array.isArray(object.values))
@@ -134,7 +135,7 @@ class Database {
 	 * @return {Promise}
 	 */
 	deleteQuery(object) {
-		let query = new QueryBuilder(this.database[this.current],debug);
+		let query = new QueryBuilder(this.database[this.current],this.debug);
 		let sql = query.deleteQuery(object);
 		sql = query.whereSql(object,sql);
 		return query.execQuery(sql,object.params);
