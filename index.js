@@ -1,9 +1,9 @@
 const Database = require("./src/Database.class");
 
-function setupDatabase(dbObject) {
+function setupDatabase(dbObject,debug=false) {
 	let databaseList = dbObject;
 
-	let database = new Database(databaseList);
+	let database = new Database(databaseList,debug);
 	database.current = Object.keys(dbObject)[0];
 
 	function query(sql,params) {

@@ -1,6 +1,7 @@
 class QueryBuilder {
-	constructor(dbConnection) {
+	constructor(dbConnection,debug) {
 		this.db = dbConnection;
+		this.debug = debug;
 	}
 	execWithWhereOrderPage(sql,object){
 		sql = this.whereSql(object, sql);
@@ -14,16 +15,23 @@ class QueryBuilder {
 			params = [params];
 
 		return new Promise((resolve) => {
+			let sqlObj = {};
+			if (this.debug) {
+				sqlObj['sql'] = this.db.format(sql,params);
+			}
+
 			this.db.query(sql,params,function (err,result) {
 				if (err)
 					resolve({
 						result:null,
-						error:err
+						error:err,
+						...sqlObj
 					});
 				else{
 					resolve({
 						result:result,
-						error:null
+						error:null,
+						...sqlObj
 					});
 				}
 			})
