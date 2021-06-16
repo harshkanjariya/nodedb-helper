@@ -151,7 +151,7 @@ class QueryBuilder {
 			let order = object.order;
 			if (typeof order==='string'){
 				sql += ` order by ${order}`;
-			}else{
+			}else if(order.length>0){
 				sql += ` order by ${order.join(',')}`;
 			}
 		}
