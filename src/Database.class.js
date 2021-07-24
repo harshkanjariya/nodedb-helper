@@ -21,15 +21,22 @@ class Database {
 		Object.keys(databases).forEach(k=>{
 			this.databaseNames.push(k);
 
-			this.database[k] = mysql.createConnection({
+			let db_config = {
 				host: host,
 				user: username,
 				password: password,
 				database: databases[k],
-			});
-			this.database[k].connect(function(err) {
+			};
+			this.database[k] = mysql.createConnection(db_config);
+			this.database[k].connect((err)=>{
 				if (err)throw err;
 				console.log(databases[k]+" Connected successfully")
+			});
+			this.database[k].on('error',(err)=>{
+				if(err.code === 'PROTOCOL_CONNECTION_LOST')
+					this.database[k] = mysql.createConnection(db_config);
+				else
+					throw err;
 			});
 		})
 
