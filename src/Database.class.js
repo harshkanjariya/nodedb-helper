@@ -5,27 +5,19 @@ class Database {
 	constructor(databases,debug) {
 		let host, username,password;
 
-		if (process.env.NODE_ENV === 'production'){
-			host = process.env.PROD_DB_URL;
-			username = process.env.PROD_DB_USERNAME;
-			password = process.env.PROD_DB_PASSWORD;
-		}else{
-			host = process.env.DEV_DB_URL;
-			username = process.env.DEV_DB_USERNAME;
-			password = process.env.DEV_DB_PASSWORD;
-		}
 		this.database = {};
 		this.databaseNames = [];
 		this.debug = debug;
 
 		Object.keys(databases).forEach(k=>{
 			this.databaseNames.push(k);
+			let obj = databases[k];
 
 			let db_config = {
-				host: host,
-				user: username,
-				password: password,
-				database: databases[k],
+				host: obj.host,
+				user: obj.username,
+				password: obj.password,
+				database: obj.name,
 			};
 			this.database[k] = mysql.createConnection(db_config);
 			this.database[k].connect((err)=>{
