@@ -22,7 +22,7 @@ class Database {
 			this.database[k] = mysql.createConnection(db_config);
 			this.database[k].connect((err)=>{
 				if (err)throw err;
-				console.log(databases[k]+" Connected successfully")
+				console.log(databases[k].name+" Connected successfully")
 			});
 			this.database[k].on('error',(err)=>{
 				if(err.code === 'PROTOCOL_CONNECTION_LOST')
