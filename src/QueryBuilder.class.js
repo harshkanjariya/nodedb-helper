@@ -26,7 +26,7 @@ class QueryBuilder {
 
 			this.db.query(sql, params, function (err, result) {
 				if (err) {
-					fs.appendFile('db-error.log',err.toString(),()=>{});
+					fs.appendFile('db-error.log',err.toString()+'\n',()=>{});
 					resolve({
 						result: null,
 						error: err,
