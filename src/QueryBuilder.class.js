@@ -1,36 +1,41 @@
+const fs = require('fs');
+
 class QueryBuilder {
-	constructor(dbConnection,debug) {
+	constructor(dbConnection, debug) {
 		this.db = dbConnection;
 		this.debug = debug;
 	}
-	execWithWhereOrderPage(sql,object){
+
+	execWithWhereOrderPage(sql, object) {
 		sql = this.whereSql(object, sql);
 		sql = this.orderSql(object, sql);
 		sql = this.page(object, sql);
 
-		return this.execQuery(sql,object.params);
+		return this.execQuery(sql, object.params);
 	}
-	execQuery(sql,params){
-		if (params && typeof params==="string")
+
+	execQuery(sql, params) {
+		if (params && typeof params === "string")
 			params = [params];
 
 		return new Promise((resolve) => {
 			let sqlObj = {};
 			if (this.debug) {
-				sqlObj['sql'] = this.db.format(sql,params);
+				sqlObj['sql'] = this.db.format(sql, params);
 			}
 
-			this.db.query(sql,params,function (err,result) {
-				if (err)
+			this.db.query(sql, params, function (err, result) {
+				if (err) {
+					fs.appendFile('db-error.log',err.toString());
 					resolve({
-						result:null,
-						error:err,
+						result: null,
+						error: err,
 						...sqlObj
 					});
-				else{
+				} else {
 					resolve({
-						result:result,
-						error:null,
+						result: result,
+						error: null,
 						...sqlObj
 					});
 				}
@@ -38,61 +43,70 @@ class QueryBuilder {
 		});
 	}
 
-	selectQuery(object){
+	selectQuery(object) {
 		let sql = 'select ';
-		sql = this.columnsSql(object,sql);
+		sql = this.columnsSql(object, sql);
 		sql += ` from ${object.table} `;
 		return sql;
 	}
-	selectJoinQuery(object){
+
+	selectJoinQuery(object) {
 		let sql = 'select ';
-		sql = this.columnsSql(object,sql);
+		sql = this.columnsSql(object, sql);
 		sql += ` from ${object.tables[0]} `;
 
-		if (typeof object.joins==='string')
+		if (typeof object.joins === 'string')
 			object.joins = [object.joins];
-		for (let i=1; i<object.tables.length; i++){
-			sql += ` left join ${object.tables[i]} on ${object.joins[i-1]}`;
+		for (let i = 1; i < object.tables.length; i++) {
+			sql += ` left join ${object.tables[i]} on ${object.joins[i - 1]}`;
 		}
 		return sql;
 	}
-	insertQuery(table,values){
+
+	insertQuery(table, values) {
 		let keys = Object.keys(values);
-		let sql = `insert into ${table}(${keys.join(',')}) values(`;
+		let sql = `insert into ${table}(${keys.join(',')})
+                   values (`;
 
 		let vals = [];
-		for (let i=0;i<keys.length;i++){
-			if (i!==0)
+		for (let i = 0; i < keys.length; i++) {
+			if (i !== 0)
 				sql += ',';
 			sql += '?';
 			vals.push(values[keys[i]]);
 		}
 		sql += ')';
-		return {sql,params:vals};
+		return {sql, params: vals};
 	}
-	insertMultipleQuery(table,values){
+
+	insertMultipleQuery(table, values) {
 		if (values.length < 1) return '';
 		let keys = Object.keys(values[0]);
-		let sql = `insert into ${table} (${keys.join(',')}) values ? `;
-		values = values.map(v=>{
-			return keys.map(k=>v[k])
+		let sql = `insert into ${table} (${keys.join(',')})
+                   values ? `;
+		values = values.map(v => {
+			return keys.map(k => v[k])
 		})
-		return {sql,params:[values]}
+		return {sql, params: [values]}
 	}
-	updateQuery(object){
+
+	updateQuery(object) {
 		if (typeof object.params === "string")
 			object.params = [object.params];
 
-		let sql = `update ${object.table} set ?`;
-		object.params = [object.values,...object.params];
+		let sql = `update ${object.table}
+                   set ?`;
+		object.params = [object.values, ...object.params];
 		return sql;
 	}
-	deleteQuery(object){
-		return `delete from ${object.table}`;
+
+	deleteQuery(object) {
+		return `delete
+                from ${object.table}`;
 	}
 
-	setValuesWithIgnoreSql(object,sql){
-		if (object.ignore && typeof object.ignore==="string")
+	setValuesWithIgnoreSql(object, sql) {
+		if (object.ignore && typeof object.ignore === "string")
 			object.ignore = [object.ignore];
 
 		let keys;
@@ -102,66 +116,70 @@ class QueryBuilder {
 			keys = Object.keys(object.values);
 
 		let filteredKeys = [];
-		if (object.ignore!==true)
-		keys.forEach(k=>{
-			if (object.ignore && object.ignore.includes(k))return;
-			filteredKeys.push(k);
-		})
+		if (object.ignore !== true)
+			keys.forEach(k => {
+				if (object.ignore && object.ignore.includes(k)) return;
+				filteredKeys.push(k);
+			})
 		if (filteredKeys.length === 0 && !object.duplicateUpdate)
 			return sql;
 
 		let addable = [];
-		filteredKeys.forEach((k)=>{
+		filteredKeys.forEach((k) => {
 			if ((object.ignore && object.ignore.includes(k)) ||
-				(object.duplicateIgnore && object.duplicateIgnore.includes(k)))return;
+				(object.duplicateIgnore && object.duplicateIgnore.includes(k))) return;
 
-			addable.push(k+`=values(${k})`);
+			addable.push(k + `=values(${k})`);
 		});
 
-		if (object.duplicateUpdate){
+		if (object.duplicateUpdate) {
 			let keys = Object.keys(object.duplicateUpdate);
-			keys.forEach((k)=>{
-				addable.push(k+`='${object.duplicateUpdate[k]}'`);
+			keys.forEach((k) => {
+				addable.push(k + `='${object.duplicateUpdate[k]}'`);
 			});
 		}
 		sql += addable.join(',');
 
 		return sql;
 	}
-	columnsSql(object,sql){
-		if (!object.columns){
+
+	columnsSql(object, sql) {
+		if (!object.columns) {
 			sql += '*';
-		}else{
-			if (typeof object.columns==='string'){
+		} else {
+			if (typeof object.columns === 'string') {
 				sql += object.columns;
-			}else{
+			} else {
 				sql += object.columns.join(',');
 			}
 		}
 		return sql;
 	}
+
 	whereSql(object, sql) {
-		if (object.where && object.where.trim() !== ''){
+		if (object.where && object.where.trim() !== '') {
 			return sql + ' where ' + object.where;
 		}
 		return sql;
 	}
+
 	orderSql(object, sql) {
-		if (object.order){
+		if (object.order) {
 			let order = object.order;
-			if (typeof order==='string'){
+			if (typeof order === 'string') {
 				sql += ` order by ${order}`;
-			}else if(order.length>0){
+			} else if (order.length > 0) {
 				sql += ` order by ${order.join(',')}`;
 			}
 		}
 		return sql;
 	}
+
 	page(object, sql) {
-		if (object.pageSize){
+		if (object.pageSize) {
 			sql += ` limit ${object.pageSize}`;
 		}
-		if (object.pageNumber){
+		if (object.pageNumber) {
 			sql += ` offset ${object.pageNumber * object.pageSize}`;
 		}
 		return sql;
