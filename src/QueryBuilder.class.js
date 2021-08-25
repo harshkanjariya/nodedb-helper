@@ -23,25 +23,35 @@ class QueryBuilder {
 			if (this.debug) {
 				sqlObj['sql'] = this.db.format(sql, params);
 			}
-
-			this.db.query(sql, params, function (err, result) {
+			this.db.getConnection((err,connection)=>{
 				if (err) {
-					if (this.debug){
-						fs.appendFile('db-error.log',err.stack+'\n',()=>{});
-					}
+					connection.release();
 					resolve({
 						result: null,
 						error: err,
 						...sqlObj
 					});
-				} else {
-					resolve({
-						result: result,
-						error: null,
-						...sqlObj
-					});
 				}
-			})
+				connection.query(sql, params,(err, result)=>{
+					connection.release();
+					if (err) {
+						if (this.debug){
+							fs.appendFile('db-error.log',err.stack+'\n',()=>{});
+						}
+						resolve({
+							result: null,
+							error: err,
+							...sqlObj
+						});
+					} else {
+						resolve({
+							result: result,
+							error: null,
+							...sqlObj
+						});
+					}
+				})
+			});
 		});
 	}
 
