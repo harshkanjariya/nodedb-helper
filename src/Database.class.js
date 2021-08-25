@@ -20,16 +20,7 @@ class Database {
 				database: obj.name,
 			};
 			this.database[k] = mysql.createPool(db_config);
-			this.database[k].connect((err)=>{
-				if (err)throw err;
-				console.log(databases[k].name+" Connected successfully")
-			});
-			this.database[k].on('error',(err)=>{
-				// if(err.code === 'PROTOCOL_CONNECTION_LOST')
-				// 	this.database[k] = mysql.createConnection(db_config);
-				// else
-				throw err;
-			});
+			console.log(databases[k].name+" Connected successfully")
 		})
 
 		this.current = 'emplicheck_esign';
