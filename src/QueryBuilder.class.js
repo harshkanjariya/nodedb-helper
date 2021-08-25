@@ -19,11 +19,11 @@ class QueryBuilder {
 			params = [params];
 
 		return new Promise((resolve) => {
-			let sqlObj = {};
-			if (this.debug) {
-				sqlObj['sql'] = this.db.format(sql, params);
-			}
 			this.db.getConnection((err,connection)=>{
+				let sqlObj = {};
+				if (this.debug) {
+					sqlObj['sql'] = connection.format(sql, params);
+				}
 				if (err) {
 					connection.release();
 					resolve({
