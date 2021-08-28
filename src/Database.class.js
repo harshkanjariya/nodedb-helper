@@ -19,8 +19,13 @@ class Database {
 				password: obj.password,
 				database: obj.name,
 			};
-			this.database[k] = mysql.createPool(db_config);
-			console.log(databases[k].name+" Connected successfully")
+			this.database[k] = mysql.createConnection(db_config);
+			this.database[k].connect(function (err) {
+				if (err) throw err;
+				else{
+					console.log(databases[k].name+" Connected successfully")
+				}
+			});
 		})
 
 		this.current = 'emplicheck_esign';

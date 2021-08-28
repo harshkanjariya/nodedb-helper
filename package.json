@@ -1,6 +1,6 @@
 {
   "name": "nodedb-helper",
-  "version": "1.2.3",
+  "version": "1.2.5",
   "description": "Nodejs MySQL Helper",
   "main": "index.js",
   "scripts": {

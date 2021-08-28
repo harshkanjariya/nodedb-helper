@@ -19,39 +19,29 @@ class QueryBuilder {
 			params = [params];
 
 		return new Promise((resolve) => {
-			this.db.getConnection((err,connection)=>{
-				let sqlObj = {};
-				if (this.debug) {
-					sqlObj['sql'] = connection.format(sql, params);
-				}
+			let sqlObj = {};
+			if (this.debug) {
+				sqlObj['sql'] = this.db.format(sql, params);
+			}
+			this.db.query(sql, params, (err, result) => {
 				if (err) {
-					connection.release();
+					if (this.debug) {
+						fs.appendFile('db-error.log', err.stack + '\n', () => {
+						});
+					}
 					resolve({
 						result: null,
 						error: err,
 						...sqlObj
 					});
+				} else {
+					resolve({
+						result: result,
+						error: null,
+						...sqlObj
+					});
 				}
-				connection.query(sql, params,(err, result)=>{
-					connection.release();
-					if (err) {
-						if (this.debug){
-							fs.appendFile('db-error.log',err.stack+'\n',()=>{});
-						}
-						resolve({
-							result: null,
-							error: err,
-							...sqlObj
-						});
-					} else {
-						resolve({
-							result: result,
-							error: null,
-							...sqlObj
-						});
-					}
-				})
-			});
+			})
 		});
 	}
 
