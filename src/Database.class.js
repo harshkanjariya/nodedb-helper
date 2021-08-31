@@ -2,14 +2,14 @@ const QueryBuilder = require("./QueryBuilder.class");
 const mysql = require("mysql");
 
 class Database {
-	constructor(databases,debug) {
-		let host, username,password;
+	constructor(databases, debug) {
+		let host, username, password;
 
 		this.database = {};
 		this.databaseNames = [];
 		this.debug = debug;
 
-		Object.keys(databases).forEach(k=>{
+		Object.keys(databases).forEach(k => {
 			this.databaseNames.push(k);
 			let obj = databases[k];
 
@@ -19,30 +19,57 @@ class Database {
 				password: obj.password,
 				database: obj.name,
 			};
-			this.database[k] = mysql.createConnection(db_config);
-			this.database[k].connect(function (err) {
-				if (err) throw err;
-				else{
-					console.log(databases[k].name+" Connected successfully")
-				}
-			});
+			this.database[k] = mysql.createPool(db_config);
+			console.log(databases[k].name + " Connected successfully")
 		})
 
 		this.current = 'emplicheck_esign';
 	}
-	beginTransaction(){
-		return this.database[this.current].beginTransaction();
+
+	beginTransaction() {
+		return new Promise((resolve, reject) => {
+			this.database[this.current].getConnection((err, connection) => {
+				connection.beginTransaction((err) => {
+					if (err) {                  //Transaction Error (Rollback and release connection)
+						connection.rollback(function () {
+							connection.release();
+							reject(err);
+						});
+					} else {
+						resolve(connection);
+					}
+				});
+			});
+		});
 	}
-	commit(){
-		return this.database[this.current].commit();
+
+	commit(connection) {
+		return new Promise((resolve, reject) => {
+			connection.commit((err) => {
+				if (err) {
+					connection.rollback(function () {
+						connection.release();
+						reject(err);
+					});
+				} else {
+					connection.release();
+					resolve();
+				}
+			});
+		});
 	}
-	rollback(){
-		return this.database[this.current].rollback();
+
+	rollback(connection) {
+		connection.rollback(function () {
+			connection.release();
+		});
 	}
-	query(sql,params){
-		let q = new QueryBuilder(this.database[this.current],this.debug);
-		return q.execQuery(sql,params);
+
+	query(sql, params, connection = null) {
+		let q = new QueryBuilder(this.database[this.current], this.debug);
+		return q.execQuery(sql, params, connection);
 	}
+
 	/**
 	 * @param {{
 	 *     table: string,
@@ -55,37 +82,41 @@ class Database {
 	 * }} object
 	 * @return {Promise<unknown>}
 	 */
-	select(object){
-		let query = new QueryBuilder(this.database[this.current],this.debug);
+	select(object) {
+		let query = new QueryBuilder(this.database[this.current], this.debug);
 		let sql = query.selectQuery(object);
-		return query.execWithWhereOrderPage(sql,object);
+		return query.execWithWhereOrderPage(sql, object);
 	}
+
 	/**
 	 * @param {{
-     * 	   joins: [string], 
+	 * 	   joins: [string],
 	 *     table: [string], 
 	 *	   columns: string, where: string, params: []}} object
 	 * @return {Promise<unknown>}
 	 */
-	selectJoin(object){
-		let query = new QueryBuilder(this.database[this.current],this.debug);
+	selectJoin(object) {
+		let query = new QueryBuilder(this.database[this.current], this.debug);
 		let sql = query.selectJoinQuery(object);
-		return query.execWithWhereOrderPage(sql,object);
+		return query.execWithWhereOrderPage(sql, object);
 	}
+
 	/**
 	 * @param {string} table
 	 * @param {{}|[{}]} values
+	 * @param connection
 	 * @returns {Promise<{result: unknown, error: *}>}
 	 */
-	insert(table,values) {
-		let query = new QueryBuilder(this.database[this.current],this.debug);
+	insert(table, values, connection = null) {
+		let query = new QueryBuilder(this.database[this.current], this.debug);
 		let obj;
 		if (Array.isArray(values))
-			obj = query.insertMultipleQuery(table,values);
+			obj = query.insertMultipleQuery(table, values);
 		else
-			obj = query.insertQuery(table,values);
-		return query.execQuery(obj.sql,obj.params);
+			obj = query.insertQuery(table, values);
+		return query.execQuery(obj.sql, obj.params, connection);
 	}
+
 	/**
 	 * @param {{table:string,
 	 * values:{},
@@ -95,12 +126,13 @@ class Database {
 	 * }} object
 	 * @return Promise
 	 */
-	update(object){
-		let query = new QueryBuilder(this.database[this.current],this.debug);
+	update(object) {
+		let query = new QueryBuilder(this.database[this.current], this.debug);
 		let sql = query.updateQuery(object);
-		sql = query.whereSql(object,sql);
-		return query.execQuery(sql,object.params);
+		sql = query.whereSql(object, sql);
+		return query.execQuery(sql, object.params, object.connection);
 	}
+
 	/**
 	 * @param {{table:string,
 	 * values: {},
@@ -109,19 +141,20 @@ class Database {
 	 * @returns {Promise}
 	 */
 	insertOrUpdate(object) {
-		let query = new QueryBuilder(this.database[this.current],this.debug);
+		let query = new QueryBuilder(this.database[this.current], this.debug);
 
 		let obj;
 		if (Array.isArray(object.values))
-			obj = query.insertMultipleQuery(object.table,object.values);
+			obj = query.insertMultipleQuery(object.table, object.values);
 		else
-			obj = query.insertQuery(object.table,object.values);
-		let {sql,params} = obj;
+			obj = query.insertQuery(object.table, object.values);
+		let {sql, params} = obj;
 		sql += ' on duplicate key update ';
-		sql = query.setValuesWithIgnoreSql(object,sql);
+		sql = query.setValuesWithIgnoreSql(object, sql);
 
-		return query.execQuery(sql,params);
+		return query.execQuery(sql, params, object.connection);
 	}
+
 	/**
 	 * @param {{table:string,
 	 * where:string,
@@ -130,10 +163,10 @@ class Database {
 	 * @return {Promise}
 	 */
 	deleteQuery(object) {
-		let query = new QueryBuilder(this.database[this.current],this.debug);
+		let query = new QueryBuilder(this.database[this.current], this.debug);
 		let sql = query.deleteQuery(object);
-		sql = query.whereSql(object,sql);
-		return query.execQuery(sql,object.params);
+		sql = query.whereSql(object, sql);
+		return query.execQuery(sql, object.params, object.connection);
 	}
 }
 

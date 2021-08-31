@@ -4,6 +4,7 @@ class QueryBuilder {
 	constructor(dbConnection, debug) {
 		this.db = dbConnection;
 		this.debug = debug;
+		this.connection = null;
 	}
 
 	execWithWhereOrderPage(sql, object) {
@@ -11,37 +12,54 @@ class QueryBuilder {
 		sql = this.orderSql(object, sql);
 		sql = this.page(object, sql);
 
-		return this.execQuery(sql, object.params);
+		return this.execQuery(sql, object.params, object.connection);
 	}
 
-	execQuery(sql, params) {
+	execWithConnection(sql,params,connection,resolve){
+		let sqlObj = {};
+		if (this.debug) {
+			sqlObj['sql'] = connection.format(sql, params);
+		}
+		connection.query(sql, params,(err, result)=>{
+			connection.release();
+			if (err) {
+				if (this.debug){
+					fs.appendFile('db-error.log',err.stack+'\n',()=>{});
+				}
+				resolve({
+					result: null,
+					error: err,
+					...sqlObj
+				});
+			} else {
+				resolve({
+					result: result,
+					error: null,
+					...sqlObj
+				});
+			}
+		})
+	}
+	execQuery(sql, params, connection=null) {
 		if (params && typeof params === "string")
 			params = [params];
 
 		return new Promise((resolve) => {
-			let sqlObj = {};
-			if (this.debug) {
-				sqlObj['sql'] = this.db.format(sql, params);
-			}
-			this.db.query(sql, params, (err, result) => {
-				if (err) {
-					if (this.debug) {
-						fs.appendFile('db-error.log', err.stack + '\n', () => {
+			if (connection){
+				this.execWithConnection(sql,params,connection,resolve);
+			}else{
+				this.db.getConnection((err,connection)=>{
+					if (err){
+						connection.release();
+						resolve({
+							result: null,
+							error: err,
 						});
+					}else{
+						this.execWithConnection(sql,params,connection,resolve);
 					}
-					resolve({
-						result: null,
-						error: err,
-						...sqlObj
-					});
-				} else {
-					resolve({
-						result: result,
-						error: null,
-						...sqlObj
-					});
-				}
-			})
+				});
+			}
 		});
 	}
 

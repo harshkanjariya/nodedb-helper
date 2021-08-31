@@ -6,16 +6,17 @@ function setupDatabase(dbObject,debug=false) {
 	let database = new Database(databaseList,debug);
 	database.current = Object.keys(dbObject)[0];
 
-	function query(sql,params) {
-		return database.query(sql,params);
+	function query(sql,params,connection=null) {
+		return database.query(sql,params,connection);
 	}
 	/**
 	 * @param {string} table
 	 * @param {{}|[{}]} values
+	 * @param connection
 	 * @returns {Promise<{result: unknown, error: *}>}
 	 */
-	function insert(table,values) {
-		return database.insert(table,values);
+	function insert(table,values,connection=null) {
+		return database.insert(table,values, connection);
 	}
 	/**
 	 * @param {{table:string,
@@ -84,8 +85,8 @@ function setupDatabase(dbObject,debug=false) {
 		selectJoin,
 		insertOrUpdate,
 		beginTransaction: ()=>database.beginTransaction(),
-		commit: ()=>database.commit(),
-		rollback: ()=>database.rollback(),
+		commit: (connection)=>database.commit(connection),
+		rollback: (connection)=>database.rollback(connection),
 	}
 	let obj = {...fns};
 	Object.keys(databaseList).forEach(k=>{
