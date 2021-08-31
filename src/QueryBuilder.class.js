@@ -15,16 +15,18 @@ class QueryBuilder {
 		return this.execQuery(sql, object.params, object.connection);
 	}
 
-	execWithConnection(sql,params,connection,resolve){
+	execWithConnection(sql, params, connection, resolve, release) {
 		let sqlObj = {};
 		if (this.debug) {
 			sqlObj['sql'] = connection.format(sql, params);
 		}
-		connection.query(sql, params,(err, result)=>{
-			connection.release();
+		connection.query(sql, params, (err, result) => {
+			if (release)
+				connection.release();
 			if (err) {
-				if (this.debug){
-					fs.appendFile('db-error.log',err.stack+'\n',()=>{});
+				if (this.debug) {
+					fs.appendFile('db-error.log', err.stack + '\n', () => {
+					});
 				}
 				resolve({
 					result: null,
@@ -40,23 +42,23 @@ class QueryBuilder {
 			}
 		})
 	}
-	execQuery(sql, params, connection=null) {
+
+	execQuery(sql, params, connection = null) {
 		if (params && typeof params === "string")
 			params = [params];
 
 		return new Promise((resolve) => {
-			if (connection){
-				this.execWithConnection(sql,params,connection,resolve);
-			}else{
-				this.db.getConnection((err,connection)=>{
-					if (err){
-						connection.release();
+			if (connection) {
+				this.execWithConnection(sql, params, connection, resolve, false);
+			} else {
+				this.db.getConnection((err, connection) => {
+					if (err) {
 						resolve({
 							result: null,
 							error: err,
 						});
-					}else{
-						this.execWithConnection(sql,params,connection,resolve);
+					} else {
+						this.execWithConnection(sql, params, connection, resolve, true);
 					}
 				});
 			}
