@@ -18,6 +18,7 @@ class Database {
 				user: obj.username,
 				password: obj.password,
 				database: obj.name,
+				multipleStatements: true
 			};
 			this.database[k] = mysql.createPool(db_config);
 			console.log(databases[k].name + " Connected successfully")
