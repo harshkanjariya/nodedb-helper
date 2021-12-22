@@ -21,10 +21,19 @@ class Database {
 				multipleStatements: true
 			};
 			this.database[k] = mysql.createPool(db_config);
-			console.log(databases[k].name + " Connected successfully")
+			let q = new QueryBuilder(this.database[k], this.debug);
+			q.execQuery('show tables')
+				.then(r=>{
+					if (r.result){
+						console.log(databases[k].name + " Connected successfully")
+					}else if (r.error.code === 'ER_BAD_DB_ERROR'){
+						throw new Error('Database not found => '+obj.name);
+					}else{
+						console.log("Database.class.js>32",r.error);
+					}
+				})
 		})
-
-		this.current = 'emplicheck_esign';
+		this.current = null;
 	}
 
 	beginTransaction() {
