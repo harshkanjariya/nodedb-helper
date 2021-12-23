@@ -182,19 +182,20 @@ class QueryBuilder {
 	selectQuery(object) {
 		let sql = 'select ';
 		sql = this.columnsSql(object, sql);
-		sql += ` from ${object.table} `;
+		sql += ` from ${QueryBuilder.table(object.table)} `;
 		return sql;
 	}
 
 	selectJoinQuery(object) {
 		let sql = 'select ';
 		sql = this.columnsSql(object, sql);
-		sql += ` from ${object.tables[0]} `;
+		sql += ` from ${QueryBuilder.table(object.tables[0])} `;
 
 		if (typeof object.joins === 'string')
 			object.joins = [object.joins];
 		for (let i = 1; i < object.tables.length; i++) {
-			sql += ` left join ${object.tables[i]} on ${object.joins[i - 1]}`;
+			let table = QueryBuilder.table(object.tables[i]);
+			sql += ` left join ${table} on ${object.joins[i - 1]}`;
 		}
 		return sql;
 	}
