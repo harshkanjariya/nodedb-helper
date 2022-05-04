@@ -4,13 +4,13 @@ const db = require('./index')({
 		host: 'localhost',
 		username: 'root',
 		password: '',
-		name: 'test1',
+		name: 'test',
 	}
 });
 
 async function getData() {
 	let result = await db.query('show tables');
-	// console.log("test.js>13",result);
+	console.log("test.js>13",result);
 	// let result = await db.insert('names',{
 	// 	name: 'Abc',
 	// });

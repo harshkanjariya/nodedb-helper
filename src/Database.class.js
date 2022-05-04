@@ -1,5 +1,5 @@
 const QueryBuilder = require("./QueryBuilder.class");
-const mysql = require("mysql");
+const mysql = require("mysql2");
 
 class Database {
 	constructor(databases, debug) {
@@ -18,6 +18,7 @@ class Database {
 				user: obj.username,
 				password: obj.password,
 				database: obj.name,
+				port: obj.port || 3306,
 				multipleStatements: true
 			};
 			this.database[k] = mysql.createPool(db_config);
