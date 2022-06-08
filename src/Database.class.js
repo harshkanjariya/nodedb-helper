@@ -36,6 +36,11 @@ class Database {
 		})
 		this.current = null;
 	}
+	close() {
+		Object.keys(this.database).forEach(key => {
+			this.database[key].end();
+		});
+	}
 
 	beginTransaction() {
 		return new Promise((resolve, reject) => {
@@ -102,7 +107,7 @@ class Database {
 	/**
 	 * @param {{
 	 * 	   joins: [string],
-	 *     table: [string], 
+	 *     table: [string],
 	 *	   columns: string, where: string, params: []}} object
 	 * @return {Promise<unknown>}
 	 */

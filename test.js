@@ -11,6 +11,10 @@ const db = require('./index')({
 async function getData() {
 	let result = await db.query('show tables');
 	console.log("test.js>13",result);
+	await new Promise(resolve => {
+		setTimeout(resolve, 2000);
+	});
+	db.close();
 	// let result = await db.insert('names',{
 	// 	name: 'Abc',
 	// });

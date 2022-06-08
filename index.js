@@ -57,8 +57,8 @@ function setupDatabase(dbObject,debug=false) {
 	}
 	/**
 	 * @param {{
-     * 	   joins: [string], 
-	 *     table: [string], 
+     * 	   joins: [string],
+	 *     table: [string],
 	 *	   columns: string, where: string, params: []}} object
 	 * @return {Promise<unknown>}
 	 */
@@ -87,6 +87,7 @@ function setupDatabase(dbObject,debug=false) {
 		beginTransaction: ()=>database.beginTransaction(),
 		commit: (connection)=>database.commit(connection),
 		rollback: (connection)=>database.rollback(connection),
+		close: () => database.close(),
 	}
 	let obj = {...fns};
 	Object.keys(databaseList).forEach(k=>{
